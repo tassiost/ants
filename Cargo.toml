@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.11.0"
+bevy = "0.19.1"
 rand = "0.8.5"
-bevy_pancam = "0.9.0"
-bevy_egui = "0.21.0"
+bevy_pancam = "0.21"
+bevy_egui = "0.40"
+egui = "0.34"
 kd-tree = "0.5.1"
+typenum = "1.17"
 
 [profile.dev]
 opt-level = 1
