@@ -1,5 +1,6 @@
 use bevy::input::ButtonInput;
 use bevy::prelude::*;
+use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy_egui::EguiContexts;
 
 #[derive(Resource)]
@@ -53,7 +54,8 @@ impl Plugin for GuiPlugin {
         app.insert_resource(SimSettings::default())
             .insert_resource(SimStatistics::default())
             .add_systems(Update, settings_toggle)
-            .add_systems(Update, settings_dialog);
+            .add_systems(Update, settings_dialog)
+            .add_systems(Update, frame_timing_dialog);
     }
 }
 
@@ -86,5 +88,43 @@ fn settings_dialog(mut contexts: EguiContexts, mut sim_settings: ResMut<SimSetti
         ui.checkbox(&mut sim_settings.is_show_food_ph, "Show food pheromones");
         ui.checkbox(&mut sim_settings.is_show_home_ph, "Show home pheromones");
         ui.checkbox(&mut sim_settings.is_show_ants, "Show ants");
+    });
+}
+
+fn frame_timing_dialog(mut contexts: EguiContexts, diagnostics: Res<DiagnosticsStore>) {
+    let Ok(ctx) = contexts.ctx_mut() else { return };
+    egui::Window::new("Frame Timing").show(ctx, |ui| {
+        let frame_time = diagnostics
+            .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
+            .and_then(|d| d.average())
+            .unwrap_or(0.0);
+
+        let fps = diagnostics
+            .get(&FrameTimeDiagnosticsPlugin::FPS)
+            .and_then(|d| d.average())
+            .unwrap_or(0.0);
+
+        ui.label(format!("FPS: {:.1}", fps));
+        ui.label(format!("Frame time: {:.2} ms", frame_time * 1000.0));
+
+        let mut cpu_ms = None;
+        let mut gpu_ms = None;
+
+        for diagnostic in diagnostics.iter() {
+            let path = diagnostic.path();
+            if path.to_string().contains("elapsed_cpu") {
+                cpu_ms = diagnostic.average();
+            }
+            if path.to_string().contains("elapsed_gpu") {
+                gpu_ms = diagnostic.average();
+            }
+        }
+
+        if let Some(cpu) = cpu_ms {
+            ui.label(format!("CPU render: {:.2} ms", cpu * 1000.0));
+        }
+        if let Some(gpu) = gpu_ms {
+            ui.label(format!("GPU render: {:.2} ms", gpu * 1000.0));
+        }
     });
 }

@@ -11,6 +11,7 @@ use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     math::vec3,
     prelude::*,
+    render::diagnostic::RenderDiagnosticsPlugin,
 };
 use bevy_pancam::{PanCam, PanCamPlugin};
 use rand::SeedableRng;
@@ -76,6 +77,7 @@ fn main() {
         })
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .add_plugins(LogDiagnosticsPlugin::default())
+        .add_plugins(RenderDiagnosticsPlugin::default())
         .add_systems(Update, close_on_esc)
         .add_plugins(PanCamPlugin)
         .insert_resource(ClearColor(Color::srgba_u8(
